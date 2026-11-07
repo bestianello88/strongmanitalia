@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#222222">
+  <meta name="application-name" content="strongmanitalia">
+  <meta name="description" content="strongmanitalia: classifiche, prove e risultati degli eventi strongman. Versione dimostrativa con dati simulati.">
+  <title>strongmanitalia — Classifica evento</title>
+  <link rel="icon" type="image/png" href="assets/strongmanitalia/header-strongman-it.png">
+  <link rel="preload" href="assets/strongmanitalia/oswald-variable.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#classifica">Vai alla classifica</a>
+  <div class="identity-bar">
+    <span class="identity-caption">CLASSIFICHE E RISULTATI</span>
+    <div class="identity-logos" role="group" aria-label="Marchi dal sito Strongman Italia">
+      <img src="assets/strongmanitalia/header-fisman.png" width="95" height="150" alt="FISMAN">
+      <img src="assets/strongmanitalia/header-strongman-it.png" width="150" height="150" alt="Strongman Italia">
+      <img src="assets/strongmanitalia/header-maxima.png" width="150" height="150" alt="Maxima">
+      <img src="assets/strongmanitalia/header-cst.png" width="92" height="150" alt="EST">
+    </div>
+  </div>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="strongmanitalia, home"><img class="brand-logo" src="assets/strongmanitalia/logo.png" width="1475" height="197" alt="strongmanitalia"></a>
+    <nav aria-label="Navigazione principale"><a class="active" href="#classifica">Classifica evento</a><button id="rules-open" class="nav-button">Come funziona</button></nav>
+    <span class="top-note"><span class="tiny-dot"></span> Edizione dimostrativa</span>
+  </header>
+  <main>
+    <div class="breadcrumb">strongmanitalia <span>/</span> EVENTO DEMO <span>/</span> <strong>CLASSIFICA</strong></div>
+    <section class="event-hero" aria-labelledby="event-title">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="tag">STRONGMAN</span><span>CLASSIFICHE · EDIZIONE DEMO</span></div>
+        <h1 id="event-title">CLASSIFICA<br><span>EVENTO.</span></h1>
+        <p class="hero-description">Ogni prova conta. Ogni punto fa la differenza.</p>
+        <div class="event-meta"><span>◷ 7–8 novembre 2026</span><span>⌖ Milano, Italia</span><span>↗ Evento dimostrativo</span></div>
+      </div>
+      <div class="hero-mark" aria-hidden="true"><img src="assets/strongmanitalia/header-strongman-it.png" width="150" height="150" alt=""><span>FORZA. PROVE. RISULTATI.</span></div>
+      <div class="hero-footer"><span><span class="live-dot"></span> <strong>DEMO INTERATTIVA</strong> <span class="footer-muted">· Risultati simulati, nessun collegamento live</span></span><button class="text-button" id="event-info">Info evento ↗</button></div>
+    </section>
+    <section class="overview" aria-label="Statistiche evento">
+      <div><span class="stat-label">ATLETI IN GARA</span><strong id="athlete-count">—</strong><span class="stat-note">Determinazione, senza limiti.</span></div>
+      <div><span class="stat-label">CATEGORIE</span><strong>4<span class="stat-unit"> divisioni</span></strong><span class="stat-note">Un campo di gara per tutti.</span></div>
+      <div><span class="stat-label">PROVE</span><strong>5<span class="stat-unit"> eventi</span></strong><span class="stat-note">Forza. Velocità. Resistenza.</span></div>
+      <div class="next-stat"><span class="stat-label">PROVA IN EVIDENZA</span><strong class="stat-event">Farmer’s Walk <span>↗</span></strong><span class="stat-note">30 metri · tempo minimo</span></div>
+    </section>
+    <section id="classifica" aria-labelledby="ranking-title">
+      <div class="section-heading"><div><div class="eyebrow small">IL CAMPO PARLA.</div><h2 id="ranking-title">Classifica <span>generale</span></h2></div><div class="ranking-actions"><button id="simulate" class="button secondary">↻ Simula risultato</button><button id="export" class="button">↓ Esporta CSV</button></div></div>
+      <div class="category-bar" role="group" aria-label="Categoria atleti">
+        <button class="category active" data-category="M90" aria-pressed="true">Uomini <strong>−90 kg</strong><span>8</span></button>
+        <button class="category" data-category="M105" aria-pressed="false">Uomini <strong>−105 kg</strong><span>6</span></button>
+        <button class="category" data-category="MOPEN" aria-pressed="false">Uomini <strong>Open</strong><span>6</span></button>
+        <button class="category" data-category="WOPEN" aria-pressed="false">Donne <strong>Open</strong><span>6</span></button>
+      </div>
+      <div class="table-tools"><label class="search"><span aria-hidden="true">⌕</span><input type="search" id="search" placeholder="Cerca atleta o squadra…" aria-label="Cerca atleta o squadra"><kbd>/</kbd></label><div class="filters"><label for="team">Squadra</label><select id="team"><option value="">Tutte le squadre</option></select><label class="sr-only" for="event-filter">Ordina classifica per prova</label><select id="event-filter"><option value="">Tutte le prove</option></select></div></div>
+      <div class="table-caption"><span id="result-count"></span><span><i class="tiny-dot"></i> <span id="last-update">Dati dimostrativi</span></span></div>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Classifica scorrevole"><table><thead id="table-head"></thead><tbody id="ranking-body"></tbody></table><div id="empty" hidden class="empty-state"><span>⌕</span><h3>Nessun atleta trovato</h3><p>Prova un altro nome o modifica i filtri.</p><button class="button secondary" id="reset-filters">Azzera filtri</button></div></div>
+      <div class="table-footer"><span><span class="legend-dot"></span> Migliore prestazione <span class="legend-separator">/</span> — Risultato da inserire <span class="legend-separator">/</span> DNS Non partito</span><span>Clicca su un atleta per il dettaglio ↗</span></div>
+    </section>
+    <section class="arena-grid" aria-label="Centro gara e modalita arbitro">
+      <article class="arena-panel referee-panel" aria-labelledby="referee-title">
+        <div class="section-heading compact"><div><div class="eyebrow small">CONTROLLO CAMPO</div><h2 id="referee-title">Modalità <span>Arbitro</span></h2></div><span class="panel-live"><i class="live-dot"></i> LOCALE</span></div>
+        <p class="panel-intro">Inserisci e conferma il risultato dal telefono o dal tablet. Il dato arriva subito al Centro Gara e alle altre schede aperte.</p>
+        <div class="referee-form">
+          <label>Categoria<select id="referee-category"></select></label>
+          <label>Prova<select id="referee-event"></select></label>
+          <label class="wide-field">Atleta<select id="referee-athlete"></select></label>
+          <label>Misura<input id="referee-value" inputmode="decimal" type="number" min="0" step="any" placeholder="—"><small id="referee-unit">PESO · kg</small></label>
+          <label>Stato<select id="referee-status"><option value="pending">In attesa</option><option value="valid">Confermato</option><option value="DNS">DNS</option><option value="DNF">DNF</option></select></label>
+        </div>
+        <div class="referee-current"><span id="referee-current">Seleziona atleta e prova</span><strong id="referee-state">IN ATTESA</strong></div>
+        <button id="referee-confirm" class="button referee-confirm" type="button">Conferma risultato</button>
+        <div class="queue-heading"><span>PROSSIMI ATLETI</span><small>Coda della prova selezionata</small></div>
+        <div id="referee-queue" class="referee-queue"></div>
+      </article>
+      <article class="arena-panel live-panel" aria-labelledby="live-title">
+        <div class="section-heading compact"><div><div class="eyebrow small">AGGIORNAMENTO IMMEDIATO</div><h2 id="live-title">Centro <span>Gara</span></h2></div><span class="panel-live"><i class="live-dot"></i> CONDIVISO</span></div>
+        <p class="panel-intro">Classifica totale e stato delle prove aggiornati tramite BroadcastChannel e localStorage nello stesso browser.</p>
+        <div class="live-meta"><strong id="live-category">Uomini −90 kg</strong><span id="live-updated">Dati dimostrativi</span></div>
+        <div id="live-ranking" class="live-ranking"></div>
+        <div id="live-events" class="live-events"></div>
+      </article>
+    </section>
+    <section class="event-strip" aria-labelledby="events-title"><div class="section-heading compact"><h2 id="events-title">Le prove <span>del campo</span></h2><span class="muted">5 prove. Una classifica.</span></div><div class="event-cards" id="event-cards"></div></section>
+    <aside class="demo-notice"><span class="notice-icon">i</span><p><strong>Un primo campo di prova.</strong> Atleti, squadre ed evento sono dimostrativi. Le regole adottate sono consultabili in “Come funziona”. I requisiti del board Miro restano da verificare.</p><button id="demo-reset" class="text-button">Ripristina demo ↻</button></aside>
+  </main>
+  <footer class="site-footer"><a class="brand footer-brand" href="./" aria-label="strongmanitalia, home"><img class="brand-logo" src="assets/strongmanitalia/logo.png" width="1475" height="197" alt="strongmanitalia"></a><span>Classifiche e risultati strongman</span><span>DEMO · 2026</span></footer>
+  <dialog id="athlete-dialog" aria-labelledby="athlete-dialog-title"><div class="dialog-top"><span class="eyebrow small">SCHEDA ATLETA</span><button class="close-dialog" aria-label="Chiudi dettaglio atleta">×</button></div><div id="athlete-content"></div></dialog>
+  <dialog id="info-dialog" aria-labelledby="info-title"><div class="dialog-top"><span class="eyebrow small">strongmanitalia</span><button class="close-dialog" aria-label="Chiudi informazioni">×</button></div><h2 id="info-title">Le regole del campo</h2><div class="info-copy"><p>Questa demo usa atleti e risultati inventati. Non mostra risultati ufficiali di gara.</p><h3>Punti e parità</h3><p>Con N atleti nella categoria, il primo riceve N punti, il secondo N−1 e così via. Le parità dividono la media dei punti delle posizioni occupate. DNS e DNF senza misura valida valgono zero. Le prove senza risultato restano in attesa.</p><p>Il totale somma i punti delle prove. A parità di totale si confrontano il numero di primi posti, poi secondi, poi terzi (countback). Se persiste, la posizione è condivisa. Le ricerche non cambiano il punteggio.</p><h3>Stato e salvataggio</h3><p>“Simula risultato” aggiorna un risultato dimostrativo. I dati restano solo in questo browser; non sono condivisi con altri dispositivi e non esiste un collegamento live. “Ripristina demo” rimuove le simulazioni.</p><h3>Requisiti da confermare</h3><p>Il board Miro non è stato verificato. Restano da definire: regolamento ufficiale, spareggi, categorie effettive, ruoli e permessi, inserimento risultati, backend e aggiornamenti in tempo reale.</p></div></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
