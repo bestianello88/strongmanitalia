@@ -1,0 +1,51 @@
+# Crea l'app Android dell'arbitro (APK) e la pubblica nella pagina "Releases" del repository.
+name: App arbitro Android
+
+on:
+  push:
+    paths:
+      - 'app-arbitro/**'
+      - '.github/workflows/app-arbitro.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Compila l'APK
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+        run: gradle -p app-arbitro assembleRelease --no-daemon
+
+      - name: Rinomina l'APK
+        run: cp app-arbitro/app/build/outputs/apk/release/app-release.apk Arbitro-strongmanitalia.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Arbitro-strongmanitalia
+          path: Arbitro-strongmanitalia.apk
+
+      - name: Pubblica nella pagina Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: app-arbitro
+          name: App arbitro (Android)
+          make_latest: true
+          body: |
+            App Android per l'arbitro di strongmanitalia Gara (versione ${{ github.run_number }}).
+            Scarica **Arbitro-strongmanitalia.apk** dal telefono e installalo.
+          files: Arbitro-strongmanitalia.apk

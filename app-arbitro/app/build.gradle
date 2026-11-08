@@ -1,0 +1,34 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.strongmanitalia.arbitro'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.strongmanitalia.arbitro'
+        minSdk 24
+        targetSdk 34
+        versionCode Integer.parseInt(System.getenv('VERSION_CODE') ?: '1')
+        versionName "1." + (System.getenv('VERSION_CODE') ?: '0')
+    }
+
+    // Chiave di firma fissa: così ogni nuova versione si installa sopra la vecchia.
+    signingConfigs {
+        arbitro {
+            storeFile file('../firma/arbitro.keystore')
+            storePassword 'strongmanitalia'
+            keyAlias 'arbitro'
+            keyPassword 'strongmanitalia'
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.arbitro
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
