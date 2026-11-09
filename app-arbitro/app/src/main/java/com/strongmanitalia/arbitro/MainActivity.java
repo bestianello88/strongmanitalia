@@ -2,6 +2,13 @@ package com.strongmanitalia.arbitro;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.webkit.ConsoleMessage;
+import android.webkit.RenderProcessGoneDetail;
+import android.webkit.WebChromeClient;
+import android.webkit.WebResourceResponse;
+import android.graphics.Bitmap;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -60,6 +67,11 @@ public class MainActivity extends Activity {
     private TextView statusText;
     private Button searchButton;
     private WebView web;
+    private TextView loading;
+    private TextView errorBar;
+    private Button browserButton;
+    private String currentUrl = null;
+    private boolean pageReady = false;
     private SharedPreferences prefs;
     private volatile boolean searching = false;
 
@@ -112,6 +124,11 @@ public class MainActivity extends Activity {
         searchButton = button("Cerca di nuovo", false);
         searchButton.setOnClickListener(v -> startSearch());
         searchScreen.addView(searchButton);
+        searchScreen.addView(space(8));
+        browserButton = button("Apri la gara nel browser", true);
+        browserButton.setVisibility(View.GONE);
+        browserButton.setOnClickListener(v -> { if (currentUrl != null) { try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(currentUrl))); } catch (Exception ignored) { } } });
+        searchScreen.addView(browserButton);
         searchScreen.addView(space(32));
 
         searchScreen.addView(text("Non la trova? Scrivi l'indirizzo mostrato nel pannello gara sul PC (per esempio 192.168.1.20:4173):", 15, MUTED, false));
@@ -272,19 +289,87 @@ public class MainActivity extends Activity {
                 return !("http".equals(scheme) || "https".equals(scheme));
             }
             @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                if (url.startsWith("http")) { pageReady = false; loading.setVisibility(View.VISIBLE); }
+            }
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                if (!url.startsWith("http")) return;
+                pageReady = true;
+                loading.setVisibility(View.GONE);
+            }
+            @Override
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 if (!request.isForMainFrame()) return;
-                showSearch();
-                statusText.setText("Non riesco ad aprire la gara: " + error.getDescription() + ". Controlla il Wi-Fi e che la gara sia avviata sul PC.");
+                fail("Non riesco ad aprire la gara (" + error.getDescription() + ").");
+            }
+            @Override
+            public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse response) {
+                if (!request.isForMainFrame()) return;
+                fail("Il PC ha risposto con un errore (" + response.getStatusCode() + ").");
+            }
+            @Override
+            public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+                fail("La pagina si è bloccata. Riprova.");
+                rebuildWebView();
+                return true;
+            }
+        });
+        web.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onConsoleMessage(ConsoleMessage message) {
+                if (message.messageLevel() == ConsoleMessage.MessageLevel.ERROR) {
+                    errorBar.setText("Errore nella pagina: " + message.message() + " (riga " + message.lineNumber() + ")");
+                    errorBar.setVisibility(View.VISIBLE);
+                }
+                return false;
             }
         });
         web.setVisibility(View.GONE);
-        root.addView(web, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        root.addView(web, 1, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        if (loading == null) {
+            loading = text("Collegamento alla gara…", 18, TEXT, true);
+            loading.setGravity(Gravity.CENTER);
+            loading.setBackgroundColor(BG);
+            loading.setVisibility(View.GONE);
+            root.addView(loading, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            errorBar = text("", 14, Color.WHITE, false);
+            errorBar.setBackgroundColor(Color.parseColor("#b3261e"));
+            errorBar.setPadding(dp(12), dp(10), dp(12), dp(10));
+            errorBar.setVisibility(View.GONE);
+            errorBar.setOnClickListener(v -> v.setVisibility(View.GONE));
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp.gravity = Gravity.BOTTOM;
+            root.addView(errorBar, lp);
+        }
+    }
+
+    private void rebuildWebView() {
+        root.removeView(web);
+        web.destroy();
+        buildWebView();
+    }
+
+    private void fail(String why) {
+        showSearch();
+        statusText.setText(why + " Controlla il Wi-Fi e che la gara sia avviata sul PC, oppure prova \"Apri la gara nel browser\".");
+        browserButton.setVisibility(currentUrl != null ? View.VISIBLE : View.GONE);
     }
 
     private void open(Gara gara) {
         prefs.edit().putString("ultimo", gara.indirizzo()).apply();
+        currentUrl = gara.url();
+        pageReady = false;
+        errorBar.setVisibility(View.GONE);
+        loading.setText("Collegamento a " + gara.indirizzo() + "…");
+        loading.setVisibility(View.VISIBLE);
         web.loadUrl(gara.url());
+        final String opened = currentUrl;
+        ui.postDelayed(() -> {
+            if (!pageReady && opened.equals(currentUrl) && web.getVisibility() == View.VISIBLE) {
+                fail("La gara non risponde da 15 secondi.");
+            }
+        }, 15000);
         web.setVisibility(View.VISIBLE);
         ((View) searchScreen.getParent()).setVisibility(View.GONE);
     }
@@ -293,6 +378,7 @@ public class MainActivity extends Activity {
         web.stopLoading();
         web.loadUrl("about:blank");
         web.setVisibility(View.GONE);
+        loading.setVisibility(View.GONE);
         ((View) searchScreen.getParent()).setVisibility(View.VISIBLE);
     }
 
